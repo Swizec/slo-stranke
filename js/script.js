@@ -30,8 +30,6 @@ d3.json('stranke.json', function (stranke) {
     timeline.domain([d3.min(dates), new Date()]);
     y.domain(d3.keys(stranke.stranke_all));
 
-    console.log(y("5"));
-
     svg.append("g")
         .attr("transform", "translate(0,30)")
         .classed('axis', true)
@@ -46,7 +44,41 @@ d3.json('stranke.json', function (stranke) {
             .attr({x: timeline(from),
                    y: y(id),
                    width: timeline(to)-timeline(from),
-                   height: y.rangeBand()})
-            .style('fill', stranka.barva);
+                   height: y.rangeBand()});
+            //.style('fill', stranka.barva);
+
+        var postane = stranka.nastala_iz.map(function (id) {
+            var s1 = stranke.stranke_all[id];
+
+            return {date: new Date(s1.do[0], s1.do[1], s1.do[2]),
+                    id: s1.id};
+        }),
+            me = {date: from,
+                  id: stranka.id};
+
+        var link = d3.svg.line()
+                .interpolate('basis')
+                .x(function (d) { return timeline(d.date); })
+                .y(function (d) { return y(d.id); });
+                //.interpolate('cardinal')
+                //.tension(0.3);
+
+        //svg.append('path')
+        //    .attr("d", d3.svg.area(postane)
+        //          .x0(function (d) { return timeline(from); })
+        //          .x1(function (d) { return timeline(d.start); })
+        //          .y0(function (d) {
+        postane.map(function (s1) {
+           //console.log([me, s1]);
+            
+            svg.append('path')
+                .datum([me, s1])
+                .attr("d", link)
+                .attr({stroke: 'steelblue',
+                       'stroke-width': y.rangeBand(),
+                       fill: 'none',
+                       opacity: 0.5});
+                                        
+        });
     });
 });
